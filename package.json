@@ -9,7 +9,7 @@
   "unpkg": "dist/native-vue-router.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/hao123-fe/native-vue-router"
+    "url": "https://github.com/hao123-fe/native-vue-router.git"
   },
   "files": [
     "dist/*.js"
