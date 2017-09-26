@@ -11,8 +11,8 @@ const replace = require('rollup-plugin-replace')
 const version = process.env.VERSION || require('../package.json').version
 const banner =
 `/**
-  * vue-router v${version}
-  * (c) ${new Date().getFullYear()} Evan You
+  * native-vue-router v${version}
+  * (c) ${new Date().getFullYear()} CaoYu
   * @license MIT
   */`
 const sass = require('rollup-plugin-sass');
@@ -21,7 +21,7 @@ const vue = require('rollup-plugin-vue');
 if (!fs.existsSync('dist')) {
   fs.mkdirSync('dist')
 }
-
+``
 const resolve = _path => path.resolve(__dirname, '../', _path)
 
 build([

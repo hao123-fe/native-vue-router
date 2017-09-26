@@ -1,6 +1,6 @@
 /**
-  * vue-router v1.0.0
-  * (c) 2017 Evan You
+  * native-vue-router v1.0.0
+  * (c) 2017 CaoYu
   * @license MIT
   */
 var RouterViewItem = {render: function(){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return (this.route && this.route.matched[0])?_c(this.route.matched[0].components.default,{tag:"component"}):_vm._e()},staticRenderFns: [],
