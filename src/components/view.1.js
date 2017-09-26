@@ -1,5 +1,6 @@
 import { warn } from '../util/warn'
 
+
 export default {
   name: 'router-view',
   functional: true,
