@@ -5,6 +5,7 @@ import { parsePath, resolvePath } from './path'
 import { resolveQuery } from './query'
 import { fillParams } from './params'
 import { warn } from './warn'
+import { assign } from './util'
 
 export function normalizeLocation (
   raw: RawLocation,
@@ -58,11 +59,4 @@ export function normalizeLocation (
     query,
     hash
   }
-}
-
-function assign (a, b) {
-  for (const key in b) {
-    a[key] = b[key]
-  }
-  return a
 }

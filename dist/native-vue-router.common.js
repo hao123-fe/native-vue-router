@@ -650,6 +650,16 @@ function install (Vue) {
   strats.beforeRouteEnter = strats.beforeRouteLeave = strats.beforeRouteUpdate = strats.created;
 }
 
+/**
+ * 基本工具方法
+ */
+var assign = function (a, b) {
+    for (var key in b) {
+        a[key] = b[key];
+    }
+    return a;
+};
+
 /*  */
 
 var inBrowser = typeof window !== 'undefined';
@@ -1399,13 +1409,6 @@ function normalizeLocation (
     query: query,
     hash: hash
   }
-}
-
-function assign (a, b) {
-  for (var key in b) {
-    a[key] = b[key];
-  }
-  return a
 }
 
 /*  */
@@ -2583,19 +2586,12 @@ NativeVueRouter.prototype.init = function init (app /* Vue component instance */
       setupHashListener
     );
   }
-    
-  var initRoute = Object.assign({}, {
-    valid: true,
-    state: ''
-  }, this.history.current);
+  var initRoute = assign({valid: true, state: ''}, this.history.current);
   this.routeStack.push(initRoute);
 
   history.listen(function (route) {
     var method = route.method;
-    var nextRoute = Object.assign({}, {
-      valid: true,
-      state: ''
-    }, route);
+    var nextRoute = assign({valid: true, state: ''}, route);
 
     this$1.apps.forEach(function (app) {
         
