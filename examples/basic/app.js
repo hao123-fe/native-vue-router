@@ -5,11 +5,27 @@ import NativeVueRouter from 'native-vue-router'
 // This installs <router-view> and <router-link>,
 // and injects $router and $route to all router-enabled child components
 Vue.use(NativeVueRouter)
-
+const timer = {
+  template: '<span>timer</span>',
+  beforeRouteLeave: function () {
+    console.log(timer);
+  }
+}
 // 2. Define route components
-const Home = { 
+const Home = {
+  data: () => {
+    return {
+      name: 'Home'
+    }
+  },
+  methods: {
+    sayHello() {
+      console.log('Hello');
+    }
+  },
   template: `
     <div class="main-page">
+    <timer></timer>
       <div>
           <router-link to="/second/123/haomeizi" class="top-menu-btn btn"><h2>Second</h2></router-link>
       </div>
@@ -36,9 +52,23 @@ const Home = {
           <li>20</li>
       </ul>
     </div>
-  ` 
+  `,
+   'beforeRouteLeave': function (to, from, next) {
+    next();
+   },
+   'beforeRouteEnter': (to, from, next) => {
+    next();
+   },
+   components: {
+    timer: timer
+   }
 }
-const Second = { 
+const Second = {
+  data: () => {
+    return {
+      name: 'Second'
+    }
+  },
   template: `
     <div class="main-page">
       <router-link method="back"><h1>返回上一级</h1></router-link>
@@ -47,7 +77,13 @@ const Second = {
         <router-link to="/third" class="top-menu-btn btn"><h2>Third</h2></router-link>
       </div>
     </div>
-  ` 
+  ` ,
+  beforeRouteLeave(to, from, next) {
+    next();
+  },
+  'beforeRouteEnter': (to, from, next) => {
+    next();
+   }
 }
 const Third = { 
   template: `

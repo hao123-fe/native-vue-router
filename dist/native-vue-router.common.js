@@ -87,9 +87,30 @@ var View = {render: function(){var _vm=this;var _h=_vm.$createElement;var _c=_vm
   beforeUpdate: function beforeUpdate() {
     // console.log('beforeUpdate')
   },
+  // beforeMount() {
+  //   // console.log('mounted')
+  //   // 滑屏事件初始化
+  //   console.log(1);
+  //   let data = this.$options._parentVnode.data;
+  //   let matched = this.$route.matched[0];
+  //   data.registerRouteInstance = (vm, val) => {
+  //     // val could be undefined for unregistration
+  //     const current = matched.instances.default;
+  //     if (
+  //       (val && current !== vm) ||
+  //       (!val && current === vm)
+  //     ) {
+  //       if (val) {
+  //         console.log('current', current);
+  //         console.log('val', val);
+  //         console.log('vm', vm);
+  //       }
+  //       console.log(name);
+  //       matched.instances[name] = val
+  //     }
+  //   }
+  // },
   mounted: function mounted() {
-    // console.log('mounted')
-    // 滑屏事件初始化
     this.initTouchEvent();
   },
   updated: function updated() {
@@ -595,6 +616,7 @@ function findAnchor (children) {
   }
 }
 
+// import View from './components/view.1.js'
 var _Vue;
 
 function install (Vue) {
@@ -623,10 +645,19 @@ function install (Vue) {
       } else {
         this._routerRoot = (this.$parent && this.$parent._routerRoot) || this;
       }
-      registerInstance(this, this);
+    },
+    mounted: function mounted() {
+     var parent = this.$parent;
+     parent && (parent = parent.$vnode) && (parent = parent.tag);
+     // 为router-view-item下面的route-record注册组件实例，保证
+     // 触发组件上的路由钩子
+     if (parent && parent.indexOf('router-view-item') > -1) {
+        this.$route.matched[0].instances.default = this;
+     } 
     },
     destroyed: function destroyed () {
       registerInstance(this);
+      // this.$route.matched[0].instances.default = undefined;// 组件销毁的时候
     }
   });
 
@@ -1768,8 +1799,6 @@ function pushState (router, url, replace) {
       key: _key,
       path: url
     };
-    console.log('replace=======' + replace + '====url====' + url);
-    console.log(state);
     if (replace) {
       history.replaceState(state, '', url);
 
@@ -1951,8 +1980,6 @@ History.prototype.transitionTo = function transitionTo (method,
     var this$1 = this;
 
   var route = this.router.match(method, location, this.current);
-  console.log('route=========');
-  console.log(route);
   this.confirmTransition(route, function () {
     this$1.updateRoute(route);
     onComplete && onComplete(route);
@@ -2234,7 +2261,6 @@ var HTML5History = (function (History$$1) {
       // 后退
       var preHistory = router.historyStack[router.historyIndex - 1];
       var nextHistory = router.historyStack[router.historyIndex + 1];
-      console.log(nextHistory);
       if (preHistory && state.key === preHistory.key) {
           router.historyIndex--;
           this$1.onPopState('back', state.path);
@@ -2288,7 +2314,6 @@ var HTML5History = (function (History$$1) {
 
     var ref = this;
     var fromRoute = ref.current;
-    console.log('replace1111111111');
     this.transitionTo('replace', location, function (route) {
       replaceState(this$1.router, cleanPath(this$1.base + route.fullPath));
       handleScroll(this$1.router, route, fromRoute, false);
@@ -2609,7 +2634,6 @@ NativeVueRouter.prototype.init = function init (app /* Vue component instance */
         }
 
         var pageCount = this$1.getPageCount();
-        console.log('count=====' + pageCount);
         if (pageCount > 1) {
             this$1.routeStack[this$1.routeStack.length - 1].state = 'pop';
         } else {
@@ -2617,7 +2641,6 @@ NativeVueRouter.prototype.init = function init (app /* Vue component instance */
         }
       }
 
-      console.log(this$1.routeStack);
       app._route = route;
       app._routeStack = this$1.routeStack;
     });

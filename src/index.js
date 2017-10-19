@@ -152,7 +152,6 @@ export default class NativeVueRouter {
           }
 
           const pageCount = this.getPageCount()
-          console.log('count=====' + pageCount)
           if (pageCount > 1) {
               this.routeStack[this.routeStack.length - 1].state = 'pop'
           } else {
@@ -160,7 +159,6 @@ export default class NativeVueRouter {
           }
         }
 
-        console.log(this.routeStack)
         app._route = route
         app._routeStack = this.routeStack
       })

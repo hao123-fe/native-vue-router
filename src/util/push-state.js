@@ -49,8 +49,6 @@ export function pushState (router: Router, url: string, replace?: boolean) {
       key: _key,
       path: url
     }
-    console.log('replace=======' + replace + '====url====' + url)
-    console.log(state)
     if (replace) {
       history.replaceState(state, '', url)
 

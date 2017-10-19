@@ -21,7 +21,6 @@ export class HTML5History extends History {
       // 后退
       const preHistory = router.historyStack[router.historyIndex - 1]
       const nextHistory = router.historyStack[router.historyIndex + 1]
-      console.log(nextHistory)
       if (preHistory && state.key === preHistory.key) {
           router.historyIndex--
           this.onPopState('back', state.path)
@@ -65,7 +64,6 @@ export class HTML5History extends History {
 
   replace (location: RawLocation, onComplete?: Function, onAbort?: Function) {
     const { current: fromRoute } = this
-    console.log('replace1111111111')
     this.transitionTo('replace', location, route => {
       replaceState(this.router, cleanPath(this.base + route.fullPath))
       handleScroll(this.router, route, fromRoute, false)
