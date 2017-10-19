@@ -1,4 +1,5 @@
 import View from './components/router-view.vue'
+// import View from './components/view.1.js'
 import Link from './components/link'
 
 export let _Vue
@@ -29,10 +30,20 @@ export function install (Vue) {
       } else {
         this._routerRoot = (this.$parent && this.$parent._routerRoot) || this
       }
-      registerInstance(this, this)
+      registerInstance(this, this);
+    },
+    mounted() {
+     let parent = this.$parent;
+     parent && (parent = parent.$vnode) && (parent = parent.tag);
+     // 为router-view-item下面的route-record注册组件实例，保证
+     // 触发组件上的路由钩子
+     if (parent && parent.indexOf('router-view-item') > -1) {
+        this.$route.matched[0].instances.default = this;
+     } 
     },
     destroyed () {
       registerInstance(this)
+      // this.$route.matched[0].instances.default = undefined;// 组件销毁的时候
     }
   })
 

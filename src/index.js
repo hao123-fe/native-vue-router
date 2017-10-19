@@ -2,6 +2,7 @@
 
 import { install } from './install'
 import { START } from './util/route'
+import { assign } from './util/util'
 import { assert } from './util/warn'
 import { inBrowser } from './util/dom'
 import { cleanPath } from './util/path'
@@ -128,19 +129,12 @@ export default class NativeVueRouter {
         setupHashListener
       )
     }
-    
-    let initRoute = Object.assign({}, {
-      valid: true,
-      state: ''
-    }, this.history.current)
+    let initRoute = assign({valid: true, state: ''}, this.history.current)
     this.routeStack.push(initRoute)
 
     history.listen(route => {
       const method = route.method
-      let nextRoute = Object.assign({}, {
-        valid: true,
-        state: ''
-      }, route)
+      let nextRoute = assign({valid: true, state: ''}, route);
 
       this.apps.forEach((app) => {
         
@@ -158,7 +152,6 @@ export default class NativeVueRouter {
           }
 
           const pageCount = this.getPageCount()
-          console.log('count=====' + pageCount)
           if (pageCount > 1) {
               this.routeStack[this.routeStack.length - 1].state = 'pop'
           } else {
@@ -166,7 +159,6 @@ export default class NativeVueRouter {
           }
         }
 
-        console.log(this.routeStack)
         app._route = route
         app._routeStack = this.routeStack
       })
