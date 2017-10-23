@@ -3,7 +3,7 @@
     <div class="page-stack" ref="pageStackRoot">
       <div :class="{'page-wrap': true, 'hidden': !item.valid, 'first': !index, 'goback': item.state === 'pop'}" 
         v-for="(item, index) in this.$routeStack" 
-        :key="item.path + index">
+        :key="item.path + index" @transitionend="transitionendHandler">
         <div class="page-viewport">
           <router-view-item :route="item">{{item.path + index}}</router-view-item>
         </div>
@@ -55,11 +55,17 @@ export default {
     }
   },
   methods: {
+    transitionendHandler() {
+      if (this.$route.method === 'back') {
+        this.$router.clearInvalidRoute()
+        this.$router.updateView()
+      }
+    },
     // 新页面进入动效
     pushPage() {
       const lastChild = this.$refs.pageStackRoot.lastChild
       setTimeout(function() {
-        lastChild.style[transformName] = 'translate3d(0, 0, 0)'
+        lastChild.style[transformName] = `translate3d(0, 0, 0)`
       }, 0)
     },
     // 当前页面退出动效
@@ -88,11 +94,6 @@ export default {
 
         // 获取最顶部活性页面
         let i = self.$routeStack.length - 1
-        while(self.$routeStack[i].valid === false
-            || self.$routeStack[i].state === 'pop') {
-            i--
-        }
-
         // 如果在首页则取消滑动后退
         if (i === 0) {
           return
@@ -123,12 +124,13 @@ export default {
               x: touch.screenX - touchState.startPoint.x,
               y: touch.screenY - touchState.startPoint.y
           }
-          
-          if (touchState.distance.x < 0) {
+          let dx = touch.screenX - touchState.startPoint.x
+          let dy = touch.screenY - touchState.startPoint.y
+          if (dx < 0 || Math.abs(dy) > dx) {
               return;
           }
 
-          pageViewportEl.style[transformName] = `translate3d(${touchState.distance.x}px, 0, 0)`
+          pageViewportEl.style[transformName] = `translate3d(${dx}px, 0, 0)`
         }
 
         function endHandler(e) {

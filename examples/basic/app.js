@@ -8,7 +8,6 @@ Vue.use(NativeVueRouter)
 const timer = {
   template: '<span>timer</span>',
   beforeRouteLeave: function () {
-    console.log(timer);
   }
 }
 // 2. Define route components
@@ -22,6 +21,9 @@ const Home = {
     sayHello() {
       console.log('Hello');
     }
+  },
+  beforeRouteLeave: function (to, from, next) {
+    next();
   },
   template: `
     <div class="main-page">
@@ -53,9 +55,6 @@ const Home = {
       </ul>
     </div>
   `,
-   'beforeRouteLeave': function (to, from, next) {
-    next();
-   },
    'beforeRouteEnter': (to, from, next) => {
     next();
    },
@@ -76,6 +75,28 @@ const Second = {
       <div>
         <router-link to="/third" class="top-menu-btn btn"><h2>Third</h2></router-link>
       </div>
+      <ul class="list" style="height: 200px;overflow: auto;">
+          <li>1</li>
+          <li>2</li>
+          <li>3</li>
+          <li>4</li>
+          <li>5</li>
+          <li>6</li>
+          <li>7</li>
+          <li>8</li>
+          <li>9</li>
+          <li>10</li>
+          <li>11</li>
+          <li>12</li>
+          <li>13</li>
+          <li>14</li>
+          <li>15</li>
+          <li>16</li>
+          <li>17</li>
+          <li>18</li>
+          <li>19</li>
+          <li>20</li>
+      </ul>
     </div>
   ` ,
   beforeRouteLeave(to, from, next) {

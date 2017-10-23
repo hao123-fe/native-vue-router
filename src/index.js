@@ -9,7 +9,7 @@ import { cleanPath } from './util/path'
 import { createMatcher } from './create-matcher'
 import { normalizeLocation } from './util/location'
 import { supportsPushState } from './util/push-state'
-
+import Immutable from 'seamless-immutable'
 import { HashHistory } from './history/hash'
 import { HTML5History } from './history/html5'
 import { AbstractHistory } from './history/abstract'
@@ -88,17 +88,25 @@ export default class NativeVueRouter {
     return this.history && this.history.current
   }
 
-  getPageCount (): number {
-    // 计算有效页面数
-    let pageCount = 0
-    for(let i = 0; i < this.routeStack.length; i++) {
-      if (this.routeStack[i].valid !== false && this.routeStack[i].state != 'pop') {
-        pageCount++
-      }
-    }
-    return pageCount
+  // getPageCount (): number {
+  //   // 计算有效页面数
+  //   let pageCount = 0
+  //   for(let i = 0; i < this.routeStack.length; i++) {
+  //     if (this.routeStack[i].valid !== false && this.routeStack[i].state != 'pop') {
+  //       pageCount++
+  //     }
+  //   }
+  //   return pageCount
+  // }
+  clearInvalidRoute() {
+    while (this.routeStack[this.routeStack.length - 1].valid === false 
+            || this.routeStack[this.routeStack.length-1].state === 'pop') {
+            this.routeStack.pop()
+          }
   }
-
+  updateView() {
+    this.app._routeStack = Immutable.asMutable(this.routeStack)
+  }
   init (app: any /* Vue component instance */) {
     process.env.NODE_ENV !== 'production' && assert(
       install.installed,
@@ -146,12 +154,9 @@ export default class NativeVueRouter {
           this.routeStack.push(nextRoute)
         } else if (method === 'back') {
           // 先清空堆积的废页面,只有在back时最适合，其它时刻会用被删掉的dom替换新的dom
-          while (this.routeStack[this.routeStack.length - 1].valid === false 
-            || this.routeStack[this.routeStack.length-1].state === 'pop') {
-            this.routeStack.pop()
-          }
+          this.clearInvalidRoute()
 
-          const pageCount = this.getPageCount()
+          const pageCount = this.routeStack.length
           if (pageCount > 1) {
               this.routeStack[this.routeStack.length - 1].state = 'pop'
           } else {
@@ -160,7 +165,7 @@ export default class NativeVueRouter {
         }
 
         app._route = route
-        app._routeStack = this.routeStack
+        this.updateView()
       })
     })
   }
