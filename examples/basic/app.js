@@ -71,31 +71,14 @@ const Second = {
   template: `
     <div class="main-page">
       <router-link method="back"><h1>返回上一级</h1></router-link>
-      <h1>Second Page</h1>
+      
       <div>
         <router-link to="/third" class="top-menu-btn btn"><h2>Third</h2></router-link>
       </div>
-      <ul class="list" style="height: 200px;overflow: auto;">
-          <li>1</li>
-          <li>2</li>
-          <li>3</li>
-          <li>4</li>
-          <li>5</li>
-          <li>6</li>
-          <li>7</li>
-          <li>8</li>
-          <li>9</li>
-          <li>10</li>
-          <li>11</li>
-          <li>12</li>
-          <li>13</li>
-          <li>14</li>
-          <li>15</li>
-          <li>16</li>
-          <li>17</li>
-          <li>18</li>
-          <li>19</li>
-          <li>20</li>
+      <ul class="list" style="height: 200px;overflow:auto; width: 200px;">
+          <li v-for="n in 1000" style="float: left">
+          {{n}}
+          </li>
       </ul>
     </div>
   ` ,

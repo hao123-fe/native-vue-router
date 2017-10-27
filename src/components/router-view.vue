@@ -9,6 +9,7 @@
         </div>
       </div>
     </div>
+    <div class="page-wrap-mask" v-if="showMask" @touchstart="maskTouchHandler"></div>
   </div>
 </template>
 
@@ -21,12 +22,15 @@ const transitionAttr = 'all 0.3s ease-in'
 const transformName = css3Check('transform')
 const screenWidth = document.body.offsetWidth
 
-let pageTransitionLock = false
-
 export default {
   name: 'router-view',
   components: {
     RouterViewItem
+  },
+  data: () => {
+    return {
+      showMask: false
+    }
   },
   beforeCreate() {
     // console.log('beforeCreate')
@@ -55,6 +59,9 @@ export default {
     }
   },
   methods: {
+    maskTouchHandler(e) {
+      e.preventDefault()
+    },
     transitionendHandler() {
       if (this.$route.method === 'back') {
         this.$router.clearInvalidRoute()
@@ -72,21 +79,22 @@ export default {
     popPage() {
         if (this.$routeStack[this.$routeStack.length - 1].state === 'pop') {
             const lastChild = this.$refs.pageStackRoot.lastChild
-            lastChild.style[transformName] = 'translate3d(100%, 0, 0)'
+            setTimeout(() => {
+              lastChild.style[transformName] = 'translate3d(100%, 0, 0)'
+            }, 0)
         }
     },
     // touch功能初始化
     initTouchEvent() {
       const self = this
       const rootEl = this.$refs.pageStackRoot
-
       rootEl.addEventListener('touchstart', (e) => {
-        if (pageTransitionLock) {
-          return
-        }
-
+        let isLeftToRight = false// 是否在进行从左到右的滑屏操作
+        // 是否一开始就被判定为竖直滑动了
+        // 主要为了避免的case是在touchmove的过程中，如果一开始就被判定为竖直滑动了
+        // 那么在后续touchmove的过程中就不用移动当前层了(详见下面判断)
+        let isVertical = false
         e.stopPropagation();
-
         let touchState = {
           startPoint: null,
           distance: null
@@ -98,27 +106,18 @@ export default {
         if (i === 0) {
           return
         }
-
         const pageIndex = i
         const pageWrapEl = rootEl.childNodes[pageIndex]
         const pageViewportEl = pageWrapEl.firstChild
-
         pageViewportEl.style[transitionName] = 'none'
         touchState.distance = null
-
         const touch = e.touches[0]
         touchState.startPoint = {
             x: touch.screenX,
             y: touch.screenY
         }
-
         function moveHandler(e) {
-          if (touchState.startPoint === null) {
-            return 
-          }
-          
           e.stopPropagation()
-
           const touch = e.touches[0]
           touchState.distance = {
               x: touch.screenX - touchState.startPoint.x,
@@ -126,37 +125,50 @@ export default {
           }
           let dx = touch.screenX - touchState.startPoint.x
           let dy = touch.screenY - touchState.startPoint.y
-          if (dx < 0 || Math.abs(dy) > dx) {
-              return;
+          // 这里立即判断是否左/右滑动或者是否已经处于滑屏动画中了
+          if (Math.abs(dy) <= Math.abs(dx) || isLeftToRight) {
+          // 阻止默认行为，比如UC浏览器默认
+          // 左滑/右滑会引起前进/后退
+            e.preventDefault()
+            if (!self.showMask) {// 显示出遮罩
+              self.showMask = true
+            }
+            if (dx > 0 && !isVertical) {// 一开始就是左右滑动
+              isLeftToRight = true// 设置左右滑动的标识
+              pageViewportEl.style[transformName] = `translate3d(${dx}px, 0, 0)`
+            }
           }
-
-          pageViewportEl.style[transformName] = `translate3d(${dx}px, 0, 0)`
+          else {
+            isVertical = true// 竖直滑动
+          }
         }
 
         function endHandler(e) {
+          e.stopPropagation();
           rootEl.removeEventListener('touchmove', moveHandler)
           rootEl.removeEventListener('touchend', endHandler)
-          
-          if (!touchState.distance || touchState.distance.x === 0)  {
-              return
+          rootEl.removeEventListener('touchcancel', endHandler)
+          if (self.showMask) {// 结束的时候总是移除遮罩
+            self.showMask = false
           }
-
-          e.stopPropagation();
-
-          // 加上操作锁
-          // pageTransitionLock = true
-
-          pageViewportEl.style[transitionName] = transitionAttr;
+          isVertical = false
+          if (isLeftToRight) {// 只有在左右滑期间end的时候才有后续判断的必要
+            pageViewportEl.style[transitionName] = transitionAttr;
           if (touchState.distance.x > screenWidth / 5) {
               // 执行后退操作
               self.$router.back()
           } else {
               pageViewportEl.style[transformName] = `translate3d(0, 0, 0)`;
           }
+          }
         }
 
         rootEl.addEventListener('touchmove', moveHandler, false)
-        rootEl.addEventListener('touchend', endHandler, false)
+        rootEl.addEventListener('touchend', endHandler, false);
+        // UC浏览器在某些情况下不会触发touchend但是会触发touchcacel
+        // 事件，所以也绑定一个touchcancel事件到endHandler
+        // 避免touchend不触发的时候无法做一些清理工作的情况
+        rootEl.addEventListener('touchcancel', endHandler, false);
       }, false)
     }
   }
@@ -179,7 +191,7 @@ $transform-transition: transform 0.3s ease-out;
   height: 100%;
   overflow: hidden;
   position: relative;
-
+  
   .page-stack {
     width: 100%;
     height: 100%;
@@ -212,8 +224,16 @@ $transform-transition: transform 0.3s ease-out;
         box-shadow: -5px 0 20px #ccc;
       }
     }
+    
   }
-
+.page-wrap-mask {
+      transform: translate3d(0, 0, 0);
+      height: 100%;
+      width: 100%;
+      position: absolute;
+      z-index: 10;
+      top: 0;
+    }
   .panel-mask {
     position: absolute;
     width: 100%;
