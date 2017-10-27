@@ -3,9 +3,9 @@
     <div class="page-stack" ref="pageStackRoot">
       <div :class="{'page-wrap': true, 'hidden': !item.valid, 'first': !index, 'goback': item.state === 'pop'}" 
         v-for="(item, index) in this.$routeStack" 
-        :key="item.path + index" @transitionend="transitionendHandler">
+        :key="item.path + index" @transitionend="transitionendHandler" v-if="item.valid" v-show="(index + 3 > $routeStack.length) || index === last2Index()">
         <div class="page-viewport">
-          <router-view-item :route="item">{{item.path + index}}</router-view-item>
+          <router-view-item :route="item" >{{item.path + index}}</router-view-item>
         </div>
       </div>
     </div>
@@ -59,6 +59,34 @@ export default {
     }
   },
   methods: {
+      // 计算倒数第二个valid为true的组件的下标
+    last2Index() {
+      // 场景描述: 比如当前组件栈形如xxoox，其中x表示valid=true的组件，o为
+      // valid=false的组件 那么在渲染上述组件列表的时候，第一个x的组件样式应该变为
+      // display:none 第2个x跟最后一个x由于滑屏的原因要保留正常显示，中间的oo由于valid为false
+      // 直接不渲染dom即可 这个地方就是要算出这个列表中倒数第二个x在整个列表中的下标并渲染出来
+      let lastInex = this.$routeStack.length - 1// 倒数第一项的下标
+      let secondIndexFromEnd = lastInex - 1// 倒数第二项下标
+      // ox、oo、xo这种形式的组件列表是不会存在的，
+      // 而xx这种是正常的，不用判断。综上，当数组中有两项时不用判断
+      // 数组中至少有三项才走入下面的判断
+      if (secondIndexFromEnd > 0) {
+        // 倒数第二项组件无效
+        if (!this.$routeStack[secondIndexFromEnd].valid) {
+          while (!this.$routeStack[secondIndexFromEnd].valid && secondIndexFromEnd > -1) {// 一直往前找到一个有效的元素
+            secondIndexFromEnd = secondIndexFromEnd -1
+          }
+          return secondIndexFromEnd
+        }
+        else {// 如果倒数第二项有效，则紧挨着的倒数两项就可以显示了
+          // 比如xxoooooxx这种形式直接显示倒数两项就行了
+          return -1
+        }
+      }
+      else {
+        return -1
+      }
+    },
     maskTouchHandler(e) {
       e.preventDefault()
     },

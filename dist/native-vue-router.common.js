@@ -68,7 +68,7 @@ var transitionAttr = 'all 0.3s ease-in';
 var transformName = css3Check('transform');
 var screenWidth = document.body.offsetWidth;
 
-var View = {render: function(){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"haoapp-root"},[_c('div',{ref:"pageStackRoot",staticClass:"page-stack"},_vm._l((this.$routeStack),function(item,index){return _c('div',{key:item.path + index,class:{'page-wrap': true, 'hidden': !item.valid, 'first': !index, 'goback': item.state === 'pop'},on:{"transitionend":_vm.transitionendHandler}},[_c('div',{staticClass:"page-viewport"},[_c('router-view-item',{attrs:{"route":item}},[_vm._v(_vm._s(item.path + index))])],1)])})),_vm._v(" "),(_vm.showMask)?_c('div',{staticClass:"page-wrap-mask",on:{"touchstart":_vm.maskTouchHandler}}):_vm._e()])},staticRenderFns: [],
+var View = {render: function(){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"haoapp-root"},[_c('div',{ref:"pageStackRoot",staticClass:"page-stack"},_vm._l((this.$routeStack),function(item,index){return (item.valid)?_c('div',{directives:[{name:"show",rawName:"v-show",value:((index + 3 > _vm.$routeStack.length) || index === _vm.last2Index()),expression:"(index + 3 > $routeStack.length) || index === last2Index()"}],key:item.path + index,class:{'page-wrap': true, 'hidden': !item.valid, 'first': !index, 'goback': item.state === 'pop'},on:{"transitionend":_vm.transitionendHandler}},[_c('div',{staticClass:"page-viewport"},[_c('router-view-item',{attrs:{"route":item}},[_vm._v(_vm._s(item.path + index))])],1)]):_vm._e()})),_vm._v(" "),(_vm.showMask)?_c('div',{staticClass:"page-wrap-mask",on:{"touchstart":_vm.maskTouchHandler}}):_vm._e()])},staticRenderFns: [],
   name: 'router-view',
   components: {
     RouterViewItem: RouterViewItem
@@ -105,6 +105,34 @@ var View = {render: function(){var _vm=this;var _h=_vm.$createElement;var _c=_vm
     }
   },
   methods: {
+      // 计算倒数第二个valid为true的组件的下标
+    last2Index: function last2Index() {
+      // 场景描述: 比如当前组件栈形如xxoox，其中x表示valid=true的组件，o为
+      // valid=false的组件 那么在渲染上述组件列表的时候，第一个x的组件样式应该变为
+      // display:none 第2个x跟最后一个x由于滑屏的原因要保留正常显示，中间的oo由于valid为false
+      // 直接不渲染dom即可 这个地方就是要算出这个列表中倒数第二个x在整个列表中的下标并渲染出来
+      var lastInex = this.$routeStack.length - 1;// 倒数第一项的下标
+      var secondIndexFromEnd = lastInex - 1;// 倒数第二项下标
+      // ox、oo、xo这种形式的组件列表是不会存在的，
+      // 而xx这种是正常的，不用判断。综上，当数组中有两项时不用判断
+      // 数组中至少有三项才走入下面的判断
+      if (secondIndexFromEnd > 0) {
+        // 倒数第二项组件无效
+        if (!this.$routeStack[secondIndexFromEnd].valid) {
+          while (!this.$routeStack[secondIndexFromEnd].valid && secondIndexFromEnd > -1) {// 一直往前找到一个有效的元素
+            secondIndexFromEnd = secondIndexFromEnd -1;
+          }
+          return secondIndexFromEnd
+        }
+        else {// 如果倒数第二项有效，则紧挨着的倒数两项就可以显示了
+          // 比如xxoooooxx这种形式直接显示倒数两项就行了
+          return -1
+        }
+      }
+      else {
+        return -1
+      }
+    },
     maskTouchHandler: function maskTouchHandler(e) {
       e.preventDefault();
     },
@@ -534,6 +562,7 @@ var Link = {
         } else if (this$1.method === 'back') {
           router.back();
         } else if (this$1.method === 'push') {
+          console.log('location', location);
           router.push(location);
         } 
       }

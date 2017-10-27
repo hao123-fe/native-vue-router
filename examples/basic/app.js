@@ -104,6 +104,7 @@ const Four = {
   template: `
     <div class="main-page">
       <router-link method="back"><h1>返回上一级</h1></router-link>
+      <router-link to="/"><h1>第一页</h1></router-link>
       <router-link :to="to" method="replace"><h1>替换当前route</h1></router-link>
       <h1>FourPage Page</h1>
       <div><button v-on:click="doThis">Button</button></div>
@@ -130,7 +131,8 @@ const router = new NativeVueRouter({
   routes: [
     { 
       path: '/', 
-      component: Home 
+      component: Home,
+      default: true
     },
     { 
       path: '/second/:num/:title', 
