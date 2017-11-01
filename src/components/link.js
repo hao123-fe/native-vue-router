@@ -77,7 +77,6 @@ export default {
         } else if (this.method === 'back') {
           router.back()
         } else if (this.method === 'push') {
-          console.log('location', location)
           router.push(location)
         } 
       }

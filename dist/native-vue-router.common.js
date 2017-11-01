@@ -68,7 +68,7 @@ var transitionAttr = 'all 0.3s ease-in';
 var transformName = css3Check('transform');
 var screenWidth = document.body.offsetWidth;
 
-var View = {render: function(){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"haoapp-root"},[_c('div',{ref:"pageStackRoot",staticClass:"page-stack"},_vm._l((this.$routeStack),function(item,index){return (item.valid)?_c('div',{directives:[{name:"show",rawName:"v-show",value:((index + 3 > _vm.$routeStack.length) || index === _vm.last2Index()),expression:"(index + 3 > $routeStack.length) || index === last2Index()"}],key:item.path + index,class:{'page-wrap': true, 'hidden': !item.valid, 'first': !index, 'goback': item.state === 'pop'},on:{"transitionend":_vm.transitionendHandler}},[_c('div',{staticClass:"page-viewport"},[_c('router-view-item',{attrs:{"route":item}},[_vm._v(_vm._s(item.path + index))])],1)]):_vm._e()})),_vm._v(" "),(_vm.showMask)?_c('div',{staticClass:"page-wrap-mask",on:{"touchstart":_vm.maskTouchHandler}}):_vm._e()])},staticRenderFns: [],
+var View = {render: function(){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"haoapp-root"},[_c('div',{ref:"pageStackRoot",staticClass:"page-stack"},_vm._l((this.$routeStack),function(item,index){return (item.valid)?_c('div',{directives:[{name:"show",rawName:"v-show",value:((index + 3 > _vm.$routeStack.length) || index === _vm.last2Index()),expression:"(index + 3 > $routeStack.length) || index === last2Index()"}],key:item.path + index,class:{'page-wrap': true, 'hidden': !item.valid, 'show': item.show, 'goback': item.state === 'pop'},on:{"transitionend":_vm.transitionendHandler}},[_c('div',{staticClass:"page-viewport"},[_c('router-view-item',{attrs:{"route":item}},[_vm._v(_vm._s(item.path + index))])],1)]):_vm._e()})),_vm._v(" "),(_vm.showMask)?_c('div',{staticClass:"page-wrap-mask",on:{"touchstart":_vm.maskTouchHandler}}):_vm._e()])},staticRenderFns: [],
   name: 'router-view',
   components: {
     RouterViewItem: RouterViewItem
@@ -202,6 +202,7 @@ var View = {render: function(){var _vm=this;var _h=_vm.$createElement;var _c=_vm
           // 这里立即判断是否左/右滑动或者是否已经处于滑屏动画中了
           if (Math.abs(dy) <= Math.abs(dx) || isLeftToRight) {
           // 阻止默认行为，比如UC浏览器默认
+          // (实际上这样可以解决95%以上的左右滑动时UC的诡异行为，但有时候还是没用~~)
           // 左滑/右滑会引起前进/后退
             e.preventDefault();
             if (!self.showMask) {// 显示出遮罩
@@ -562,7 +563,6 @@ var Link = {
         } else if (this$1.method === 'back') {
           router.back();
         } else if (this$1.method === 'push') {
-          console.log('location', location);
           router.push(location);
         } 
       }
@@ -3114,18 +3114,43 @@ var HTML5History = (function (History$$1) {
     }
     // this.router.historyStack.length 用来做初始化时将默认地址做一次replace，同时添加到router.historyStack[0]
     if (getLocation(this.base) !== this.current.fullPath ||  method === 'init') {
+      if (method === 'init') {
+        var defaultPath = getDefaultPath(this.router.options.routes);
+        if (defaultPath.indexOf('/')) {
+          warn(false, 'default path must start with /, not support params or querys');
+        }
+        if (defaultPath !== '' && defaultPath !== this.current.fullPath) {
+          this.router.defaultPath = defaultPath;
+          // 这里把push设置为true，只是为了在这种情况下使下面的三目运算符判断走push逻辑
+          // 而不至于影响其他的情况
+          push = true;
+          // 把浏览器第一个历史记录替换掉
+          replaceState(this.router, cleanPath(this.base + defaultPath));
+        }
+
+      }
       var current = cleanPath(this.base + this.current.fullPath);
       push ? pushState(this.router, current) : replaceState(this.router, current);
     }
   };
-
   HTML5History.prototype.getCurrentLocation = function getCurrentLocation () {
     return getLocation(this.base)
   };
 
   return HTML5History;
 }(History));
-
+// 获取routes配置中默认的路由的path
+function getDefaultPath (routes) {
+    var i = 0;
+    // let routes = this.router.options.routes
+    while(i <= routes.length - 1) {
+      if (routes[i].default) {
+        return routes[i].path
+      }
+      i++;
+    }
+    return ''
+}
 function getLocation (base) {
   var path = window.location.pathname;
   if (base && path.indexOf(base) === 0) {
@@ -3310,6 +3335,8 @@ var NativeVueRouter = function NativeVueRouter (options) {
   this.historyIndex = 0; // 历史记录栈Index
   this.historyStack = []; // 历史记录栈
   this.routeStack = []; // 路由栈
+  // 默认路由的path，支持在分享后的落地页进行返回操作时退到默认页(一般为首页)
+  this.defaultPath = '';
 
   var mode = options.mode || 'hash';
   this.fallback = mode === 'history' && !supportsPushState && options.fallback !== false;
@@ -3352,17 +3379,6 @@ NativeVueRouter.prototype.match = function match (
 prototypeAccessors.currentRoute.get = function () {
   return this.history && this.history.current
 };
-
-// getPageCount (): number {
-// // 计算有效页面数
-// let pageCount = 0
-// for(let i = 0; i < this.routeStack.length; i++) {
-//   if (this.routeStack[i].valid !== false && this.routeStack[i].state != 'pop') {
-//     pageCount++
-//   }
-// }
-// return pageCount
-// }
 NativeVueRouter.prototype.clearInvalidRoute = function clearInvalidRoute () {
     var this$1 = this;
 
@@ -3406,8 +3422,23 @@ NativeVueRouter.prototype.init = function init (app /* Vue component instance */
       setupHashListener
     );
   }
-  var initRoute = assign({valid: true, state: ''}, this.history.current);
-  this.routeStack.push(initRoute);
+  // 如果有默认路由，初始化时把其默认的route添加进routeStack
+  if (this.defaultPath !== '') {
+      this.routeStack
+      .push(assign({
+        valid: true,
+        state: '',
+        show: true
+      }, this.match('push', this.defaultPath, this.history.current)));
+  }
+  // 当前路由对应的route添加进routeStack
+  // 上面那个默认路由和这个路由对应的组件是页面一加载
+  // 就要显示的(不需要动画效果)，所以设置show:true
+  this.routeStack.push(assign({
+    valid: true,
+    state: '',
+    show: true
+  }, this.history.current));
 
   history.listen(function (route) {
     var method = route.method;

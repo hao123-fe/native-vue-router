@@ -1,7 +1,7 @@
 <template>
   <div class="haoapp-root">
     <div class="page-stack" ref="pageStackRoot">
-      <div :class="{'page-wrap': true, 'hidden': !item.valid, 'first': !index, 'goback': item.state === 'pop'}" 
+      <div :class="{'page-wrap': true, 'hidden': !item.valid, 'show': item.show, 'goback': item.state === 'pop'}" 
         v-for="(item, index) in this.$routeStack" 
         :key="item.path + index" @transitionend="transitionendHandler" v-if="item.valid" v-show="(index + 3 > $routeStack.length) || index === last2Index()">
         <div class="page-viewport">
@@ -156,6 +156,7 @@ export default {
           // 这里立即判断是否左/右滑动或者是否已经处于滑屏动画中了
           if (Math.abs(dy) <= Math.abs(dx) || isLeftToRight) {
           // 阻止默认行为，比如UC浏览器默认
+          // (实际上这样可以解决95%以上的左右滑动时UC的诡异行为，但有时候还是没用~~)
           // 左滑/右滑会引起前进/后退
             e.preventDefault()
             if (!self.showMask) {// 显示出遮罩
@@ -240,7 +241,7 @@ $transform-transition: transform 0.3s ease-out;
         display: none;
       }
 
-      &.first {
+      &.show {
         transform: translate3d(0, 0, 0);
       }
 

@@ -11,7 +11,7 @@ import { normalizeLocation } from './util/location'
 import { supportsPushState } from './util/push-state'
 import Immutable from 'seamless-immutable'
 import { HashHistory } from './history/hash'
-import { HTML5History } from './history/html5'
+import { HTML5History, getDefaultPath} from './history/html5'
 import { AbstractHistory } from './history/abstract'
 
 import type { Matcher } from './create-matcher'
@@ -47,6 +47,8 @@ export default class NativeVueRouter {
     this.historyIndex = 0 // 历史记录栈Index
     this.historyStack = [] // 历史记录栈
     this.routeStack = [] // 路由栈
+    // 默认路由的path，支持在分享后的落地页进行返回操作时退到默认页(一般为首页)
+    this.defaultPath = ''
 
     let mode = options.mode || 'hash'
     this.fallback = mode === 'history' && !supportsPushState && options.fallback !== false
@@ -87,17 +89,6 @@ export default class NativeVueRouter {
   get currentRoute (): ?Route {
     return this.history && this.history.current
   }
-
-  // getPageCount (): number {
-  //   // 计算有效页面数
-  //   let pageCount = 0
-  //   for(let i = 0; i < this.routeStack.length; i++) {
-  //     if (this.routeStack[i].valid !== false && this.routeStack[i].state != 'pop') {
-  //       pageCount++
-  //     }
-  //   }
-  //   return pageCount
-  // }
   clearInvalidRoute() {
     while (this.routeStack[this.routeStack.length - 1].valid === false 
             || this.routeStack[this.routeStack.length-1].state === 'pop') {
@@ -137,8 +128,23 @@ export default class NativeVueRouter {
         setupHashListener
       )
     }
-    let initRoute = assign({valid: true, state: ''}, this.history.current)
-    this.routeStack.push(initRoute)
+    // 如果有默认路由，初始化时把其默认的route添加进routeStack
+    if (this.defaultPath !== '') {
+        this.routeStack
+        .push(assign({
+          valid: true,
+          state: '',
+          show: true
+        }, this.match('push', this.defaultPath, this.history.current)))
+    }
+    // 当前路由对应的route添加进routeStack
+    // 上面那个默认路由和这个路由对应的组件是页面一加载
+    // 就要显示的(不需要动画效果)，所以设置show:true
+    this.routeStack.push(assign({
+      valid: true,
+      state: '',
+      show: true
+    }, this.history.current))
 
     history.listen(route => {
       const method = route.method
