@@ -5,7 +5,7 @@ import { History } from './base'
 import { cleanPath } from '../util/path'
 import { setupScroll, handleScroll } from '../util/scroll'
 import { pushState, replaceState } from '../util/push-state'
-
+import { warn } from '../util/warn'
 export class HTML5History extends History {
   constructor (router: Router, base: ?string) {
     super(router, base)
@@ -77,16 +77,41 @@ export class HTML5History extends History {
     }
     // this.router.historyStack.length 用来做初始化时将默认地址做一次replace，同时添加到router.historyStack[0]
     if (getLocation(this.base) !== this.current.fullPath ||  method === 'init') {
+      if (method === 'init') {
+        let defaultPath = getDefaultPath(this.router.options.routes)
+        if (defaultPath.indexOf('/')) {
+          warn(false, 'default path must start with /, not support params or querys')
+        }
+        if (defaultPath !== '' && defaultPath !== this.current.fullPath) {
+          this.router.defaultPath = defaultPath
+          // 这里把push设置为true，只是为了在这种情况下使下面的三目运算符判断走push逻辑
+          // 而不至于影响其他的情况
+          push = true
+          // 把浏览器第一个历史记录替换掉
+          replaceState(this.router, cleanPath(this.base + defaultPath))
+        }
+
+      }
       const current = cleanPath(this.base + this.current.fullPath)
       push ? pushState(this.router, current) : replaceState(this.router, current)
     }
   }
-
   getCurrentLocation (): string {
     return getLocation(this.base)
   }
 }
-
+// 获取routes配置中默认的路由的path
+export function getDefaultPath (routes): string {
+    let i = 0
+    // let routes = this.router.options.routes
+    while(i <= routes.length - 1) {
+      if (routes[i].default) {
+        return routes[i].path
+      }
+      i++
+    }
+    return ''
+}
 export function getLocation (base: string): string {
   let path = window.location.pathname
   if (base && path.indexOf(base) === 0) {

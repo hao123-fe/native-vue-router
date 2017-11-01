@@ -8,7 +8,6 @@ Vue.use(NativeVueRouter)
 const timer = {
   template: '<span>timer</span>',
   beforeRouteLeave: function () {
-    console.log(timer);
   }
 }
 // 2. Define route components
@@ -22,6 +21,9 @@ const Home = {
     sayHello() {
       console.log('Hello');
     }
+  },
+  beforeRouteLeave: function (to, from, next) {
+    next();
   },
   template: `
     <div class="main-page">
@@ -53,9 +55,6 @@ const Home = {
       </ul>
     </div>
   `,
-   'beforeRouteLeave': function (to, from, next) {
-    next();
-   },
    'beforeRouteEnter': (to, from, next) => {
     next();
    },
@@ -72,10 +71,15 @@ const Second = {
   template: `
     <div class="main-page">
       <router-link method="back"><h1>返回上一级</h1></router-link>
-      <h1>Second Page</h1>
+      
       <div>
         <router-link to="/third" class="top-menu-btn btn"><h2>Third</h2></router-link>
       </div>
+      <ul class="list" style="height: 200px;overflow:auto; width: 200px;">
+          <li v-for="n in 1000" style="float: left">
+          {{n}}
+          </li>
+      </ul>
     </div>
   ` ,
   beforeRouteLeave(to, from, next) {
@@ -100,6 +104,7 @@ const Four = {
   template: `
     <div class="main-page">
       <router-link method="back"><h1>返回上一级</h1></router-link>
+      <router-link to="/"><h1>第一页</h1></router-link>
       <router-link :to="to" method="replace"><h1>替换当前route</h1></router-link>
       <h1>FourPage Page</h1>
       <div><button v-on:click="doThis">Button</button></div>
@@ -126,7 +131,8 @@ const router = new NativeVueRouter({
   routes: [
     { 
       path: '/', 
-      component: Home 
+      component: Home,
+      default: true
     },
     { 
       path: '/second/:num/:title', 

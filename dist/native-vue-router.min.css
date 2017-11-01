@@ -27,7 +27,7 @@ body {
       transition: transform 0.3s ease-out; }
       .haoapp-root .page-stack .page-wrap.hidden {
         display: none; }
-      .haoapp-root .page-stack .page-wrap.first {
+      .haoapp-root .page-stack .page-wrap.show {
         transform: translate3d(0, 0, 0); }
       .haoapp-root .page-stack .page-wrap .page-viewport {
         width: 100%;
@@ -35,6 +35,13 @@ body {
         overflow: auto;
         background-color: #ffffff;
         box-shadow: -5px 0 20px #ccc; }
+  .haoapp-root .page-wrap-mask {
+    transform: translate3d(0, 0, 0);
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    z-index: 10;
+    top: 0; }
   .haoapp-root .panel-mask {
     position: absolute;
     width: 100%;
