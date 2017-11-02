@@ -211,7 +211,7 @@ export default class NativeVueRouter {
   back () {
     // 临时兼容百度浏览器内核为安装完成时back方法报错的bug
     if (window.HaoJsSDK) {
-      window.HaoJsSDK.goBack();
+      window.HaoJsSDK.goBack();    
     } else {
       this.go(-1)
     }

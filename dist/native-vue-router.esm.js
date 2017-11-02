@@ -66,7 +66,7 @@ var transitionAttr = 'all 0.3s ease-in';
 var transformName = css3Check('transform');
 var screenWidth = document.body.offsetWidth;
 
-var View = {render: function(){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"haoapp-root"},[_c('div',{ref:"pageStackRoot",staticClass:"page-stack"},_vm._l((this.$routeStack),function(item,index){return (item.valid)?_c('div',{directives:[{name:"show",rawName:"v-show",value:((index + 3 > _vm.$routeStack.length) || index === _vm.last2Index()),expression:"(index + 3 > $routeStack.length) || index === last2Index()"}],key:item.path + index,class:{'page-wrap': true, 'hidden': !item.valid, 'show': item.show, 'goback': item.state === 'pop'},on:{"transitionend":_vm.transitionendHandler}},[_c('div',{staticClass:"page-viewport"},[_c('router-view-item',{attrs:{"route":item}},[_vm._v(_vm._s(item.path + index))])],1)]):_vm._e()})),_vm._v(" "),(_vm.showMask)?_c('div',{staticClass:"page-wrap-mask",on:{"touchstart":_vm.maskTouchHandler}}):_vm._e()])},staticRenderFns: [],
+var View = {render: function(){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"haoapp-root"},[_c('div',{ref:"pageStackRoot",staticClass:"page-stack"},_vm._l((this.$routeStack),function(item,index){return (item.valid)?_c('div',{directives:[{name:"show",rawName:"v-show",value:((index + 3 > _vm.$routeStack.length) || index === _vm.last2Index()),expression:"(index + 3 > $routeStack.length) || index === last2Index()"}],key:item.path + index,class:{'page-wrap': true, 'hidden': !item.valid, 'show': item.show, 'goback': item.state === 'pop'},on:{"transitionend":_vm.transitionendHandler}},[_c('div',{staticClass:"page-viewport"},[_c('router-view-item',{attrs:{"route":item}},[_vm._v(_vm._s(item.path + index))])],1)]):_vm._e()})),(_vm.showMask)?_c('div',{staticClass:"page-wrap-mask",on:{"touchstart":_vm.maskTouchHandler}}):_vm._e()])},staticRenderFns: [],
   name: 'router-view',
   components: {
     RouterViewItem: RouterViewItem
@@ -3501,7 +3501,12 @@ NativeVueRouter.prototype.go = function go (n) {
 };
 
 NativeVueRouter.prototype.back = function back () {
-  this.go(-1);
+  // 临时兼容百度浏览器内核为安装完成时back方法报错的bug
+  if (window.HaoJsSDK) {
+    window.HaoJsSDK.goBack();    
+  } else {
+    this.go(-1);
+  }
 };
 
 NativeVueRouter.prototype.forward = function forward () {
